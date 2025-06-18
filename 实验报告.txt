@@ -1,0 +1,263 @@
+实验项目报告内容
+
+一、实验背景：
+用到的设计模式：5种
+1. 工厂模式
+2. 单例模式
+3. 组合模式
+4. 策略模式
+5. 观察者模式
+
+这个程序的主要作用是实现一个中草药功效信息查询系统，用户可以添加、删除、修改、查询中草药信息，系统会自动对中草药进行分类，并提供多种搜索策略。系统还实现了操作日志记录和统计功能。
+
+程序流程：
+启动程序：程序启动后，进入主循环，用户可以选择执行不同的操作。
+->查询中草药：
+用户可以选择按名称或功效进行搜索。
+系统根据选择的搜索策略执行相应的搜索操作。
+->添加中草药：
+用户输入中草药名称和功效。
+系统创建新的中草药对象并添加到数据库。
+->删除中草药：
+用户输入要删除的中草药名称。
+系统从数据库中删除对应的中草药。
+->修改中草药信息：
+用户输入要修改的中草药名称和新的功效说明。
+系统更新数据库中对应中草药的信息。
+->显示所有中草药：
+系统显示所有已添加的中草药信息。
+->查看分类：
+用户可以选择查看特定分类（补气类、补血类、清热类）的中草药。
+->退出系统：用户选择退出，程序终止。
+
+二、材料与方法：
+软件：Java开发环境
+
+三、实验主要过程与结果
+
+1.1模式名字：工厂模式
+1.2类图：
+[工厂模式类图]
+1.3分析解释(代码执行过程)：
+在MedicineSystem.java中，首先声明了MedicineFactory类型的变量：
+private MedicineFactory medicineFactory;
+
+在构造函数中初始化工厂：
+medicineFactory = new MedicineFactory();
+
+当需要创建新的中草药时，通过工厂方法创建：
+Medicine medicine = medicineFactory.createMedicine(name, effect);
+
+1.4角色及其代码：
+抽象工厂接口：（Factories.java）
+public interface Factories {
+    public Medicine createMedicine(String name, String effect);
+}
+
+具体工厂类：（MedicineFactory.java）
+public class MedicineFactory implements Factories {
+    @Override
+    public Medicine createMedicine(String name, String effect) {
+        return new Medicine(name, effect);
+    }
+}
+
+2.1模式名字：单例模式
+2.2类图：
+[单例模式类图]
+2.3分析解释(代码执行过程)：
+在MedicineSystem.java中：
+private static MedicineSystem instance;
+
+public static MedicineSystem getInstance() {
+    if (instance == null) {
+        instance = new MedicineSystem();
+    }
+    return instance;
+}
+
+通过getInstance()方法获取MedicineSystem的唯一实例，确保整个系统中只有一个MedicineSystem对象。
+
+2.4角色及代码：
+单例类：（MedicineSystem.java）
+public class MedicineSystem {
+    private static MedicineSystem instance;
+    private MedicineFactory medicineFactory;
+    private MedicineDatabase database;
+    private SearchStrategy searchStrategy;
+    private MedicineObserver observer;
+
+    private MedicineSystem() {
+        medicineFactory = new MedicineFactory();
+        database = new MedicineDatabase();
+        searchStrategy = new NameSearchStrategy();
+        observer = new MedicineObserver();
+    }
+
+    public static MedicineSystem getInstance() {
+        if (instance == null) {
+            instance = new MedicineSystem();
+        }
+        return instance;
+    }
+}
+
+3.1模式名字：组合模式
+3.2类图：
+[组合模式类图]
+3.3分析解释(代码执行过程)：
+通过MedicineComponent接口定义了组合模式的基本操作：
+public interface MedicineComponent {
+    void display();
+    void add(MedicineComponent component);
+    void remove(MedicineComponent component);
+}
+
+Medicine类作为叶子节点：
+public class Medicine implements MedicineComponent {
+    // 实现display方法
+    @Override
+    public void display() {
+        System.out.println("中草药名称：" + name);
+        System.out.println("功效：" + effect);
+    }
+}
+
+MedicineCategory类作为组合节点：
+public class MedicineCategory implements MedicineComponent {
+    private List<MedicineComponent> medicines;
+    
+    @Override
+    public void display() {
+        // 显示分类信息
+        for (MedicineComponent medicine : medicines) {
+            medicine.display();
+        }
+    }
+}
+
+3.4角色及其代码：
+抽象构件类：（MedicineComponent.java）
+public interface MedicineComponent {
+    void display();
+    void add(MedicineComponent component);
+    void remove(MedicineComponent component);
+}
+
+叶子节点：（Medicine.java）
+public class Medicine implements MedicineComponent {
+    private String name;
+    private String effect;
+    
+    @Override
+    public void display() {
+        System.out.println("中草药名称：" + name);
+        System.out.println("功效：" + effect);
+    }
+}
+
+组合节点：（MedicineCategory.java）
+public class MedicineCategory implements MedicineComponent {
+    private List<MedicineComponent> medicines;
+    
+    @Override
+    public void display() {
+        for (MedicineComponent medicine : medicines) {
+            medicine.display();
+        }
+    }
+}
+
+4.1模式名字：策略模式
+4.2类图：
+[策略模式类图]
+4.3分析解释(代码执行过程)：
+在Main.java中，根据用户选择的搜索方式设置不同的搜索策略：
+if (searchMode.equals("1")) {
+    system.setSearchStrategy(new NameSearchStrategy());
+} else if (searchMode.equals("2")) {
+    system.setSearchStrategy(new EffectSearchStrategy());
+}
+
+4.4角色及其代码：
+抽象策略类：（SearchStrategy.java）
+public interface SearchStrategy {
+    void search(MedicineDatabase database, String keyword);
+}
+
+具体策略类：（NameSearchStrategy.java）
+public class NameSearchStrategy implements SearchStrategy {
+    @Override
+    public void search(MedicineDatabase database, String keyword) {
+        System.out.println("按名称搜索：" + keyword);
+        database.searchByName(keyword);
+    }
+}
+
+具体策略类：（EffectSearchStrategy.java）
+public class EffectSearchStrategy implements SearchStrategy {
+    @Override
+    public void search(MedicineDatabase database, String keyword) {
+        System.out.println("按功效搜索：" + keyword);
+        database.searchByEffect(keyword);
+    }
+}
+
+5.1模式名字：观察者模式
+5.2类图：
+[观察者模式类图]
+5.3分析解释(代码执行过程)：
+在MedicineSystem.java中，当执行操作时通知观察者：
+observer.notifyObservers("添加了新中草药：" + name);
+
+观察者收到通知后执行相应操作：
+public void update(String message) {
+    System.out.println("[系统日志] " + message);
+}
+
+5.4角色及其代码：
+抽象观察者：（Observer.java）
+public interface Observer {
+    void update(String message);
+}
+
+具体观察者：（SystemLogger.java）
+public class SystemLogger implements Observer {
+    @Override
+    public void update(String message) {
+        System.out.println("[系统日志] " + message);
+    }
+}
+
+具体观察者：（OperationCounter.java）
+public class OperationCounter implements Observer {
+    private int searchCount = 0;
+    private int addCount = 0;
+    private int deleteCount = 0;
+    private int updateCount = 0;
+
+    @Override
+    public void update(String message) {
+        if (message.contains("搜索")) {
+            searchCount++;
+        } else if (message.contains("添加")) {
+            addCount++;
+        }
+        // ... 其他统计逻辑
+    }
+}
+
+主题类：（MedicineObserver.java）
+public class MedicineObserver {
+    private List<Observer> observers = new ArrayList<>();
+
+    public void addObserver(Observer observer) {
+        observers.add(observer);
+    }
+
+    public void notifyObservers(String message) {
+        for (Observer observer : observers) {
+            observer.update(message);
+        }
+    }
+}

@@ -1,0 +1,502 @@
+实验项目报告内容（1、实验背景（目的、意义及原理等）；2、材料与方法；3、实验主要过程与结果；
+4、分析讨论；5、教师评阅）。
+一、实验背景：
+用到的设计模式：5种
+1.工厂模式
+2.单例模式
+3.装饰器模式
+4.策略模式
+5.状态模式
+
+这个程序的主要作用是模拟一个在线书店购物系统，用户可以添加书籍到购物车，查看购物车内容，对书籍进行装饰，通过不同的支付方式进行支付，并且推进购物和结算流程。
+程序流程：
+启动程序：程序启动后，进入主循环，用户可以选择执行不同的操作。
+->添加书籍：
+用户输入书籍类型（novel/textbook）。
+用户输入书籍的详细信息（书名、作者、价格、类别/科目）。
+根据书籍类型创建相应的书籍对象，并添加到购物车。
+->查看购物车：用户选择查看购物车，可以看到所有添加的书籍及其详细信息。
+->装饰书籍：
+用户选择对最后添加的书籍进行包装或装订。
+根据用户选择，使用装饰器模式对最后一本书进行相应的装饰。
+->支付：
+用户选择支付方式（微信支付或支付宝）。
+用户输入支付金额，并通过选择的支付方式完成支付。
+->流程推进：用户选择推进流程，演示购物状态的变化（购物中 -> 结算中 -> 购物中）。
+->退出程序：用户选择退出程序，程序终止。
+二、材料与方法：
+     软件：idea
+三、实验主要过程与结果
+1.1模式名字：工厂方法模式
+1.2类图
+1.3分析解释(代码执行过程)：
+   在main.java中，先进行变量声明：声明了一个 BookFactory 类型的变量 bookFactory。这个变量是一个抽象工厂接口，用于创建 Book 对象。
+BookFactory bookFactory;
+然后接收bookType(书本类型)，根据bookType的值不同实例化不同的具体工厂（以bookType=”novel”）为例，即实例化 NovelFactory，将其赋值给 bookFactory 变量。这里创建了一个 NovelFactory 对象，NovelFactory 是 BookFactory 的具体实现类，用于创建 Novel 对象。
+bookFactory = new NovelFactory();
+接下来通过 bookFactory 调用 createBook 方法创建 Novel 对象。
+Book novel = bookFactory.createBook("Title", "Author", 20.0, "Genre");
+
+1.4角色及其代码：抽象产品、具体产品、抽象工厂、具体工厂
+   抽象产品：（Book.java）
+package com.example.books;
+
+public interface Book {
+    String getTitle();
+    String getAuthor();
+    double getPrice();
+    String getDescription();
+}
+
+   具体产品：（Novel.java和Textbook.java）
+package com.example.books;
+
+public class Novel implements Book {
+    private String title;
+    private String author;
+    private double price;
+    private String genre;
+
+    public Novel(String title, String author, double price, String genre) {
+        this.title = title;
+        this.author = author;
+        this.price = price;
+        this.genre = genre;
+    }
+
+    @Override
+    public String getTitle() {
+        return title;
+    }
+
+    @Override
+    public String getAuthor() {
+        return author;
+    }
+
+    @Override
+    public double getPrice() {
+        return price;
+    }
+
+    @Override
+    public String getDescription() {
+        return title + " by " + author + ", Genre: " + genre;
+    }
+
+}
+
+package com.example.books;
+
+public class Textbook implements Book {
+    private String title;
+    private String author;
+    private double price;
+    private String subject;
+
+    public Textbook(String title, String author, double price, String subject) {
+        this.title = title;
+        this.author = author;
+        this.price = price;
+        this.subject = subject;
+    }
+
+    @Override
+    public String getTitle() {
+        return title;
+    }
+
+    @Override
+    public String getAuthor() {
+        return author;
+    }
+
+    @Override
+    public double getPrice() {
+        return price;
+    }
+
+    @Override
+    public String getDescription() {
+        return title + " by " + author + ", Subject: " + subject;
+    }
+
+}
+
+
+   抽象工厂：（BookFactory.java）
+package com.example.books;
+
+public abstract class BookFactory {
+    public abstract Book createBook(String title, String author, double price, String extra);
+}
+
+
+   具体工厂：（NovelFactory.java,TextbookFactory.java）
+package com.example.books;
+
+public class NovelFactory extends BookFactory {
+    @Override
+    public Book createBook(String title, String author, double price, String genre) {
+        return new Novel(title, author, price, genre);
+    }
+}
+package com.example.books;
+
+public class TextbookFactory extends BookFactory {
+    @Override
+    public Book createBook(String title, String author, double price, String subject) {
+        return new Textbook(title, author, price, subject);
+    }
+}
+
+2.1模式名字：单例模式
+2.2类图：
+
+      2.3分析解释(代码执行过程)：
+在Main.java中：
+ShoppingCartSingleton cart = ShoppingCartSingleton.getInstance();
+
+通过该语句实现购物车，在ShoppingCartSingleton getInstance()中，如果实例为空，则创建新实例，否则返回单例实例。获取 ShoppingCartSingleton 类的单例实例，并将其赋值给变量cart，从而确保在整个应用程序中，ShoppingCartSingleton 只有一个实例，可以统一管理购物车中的书籍。
+2.4角色及代码：仅一个单例角色
+package com.example.shoppingcart;
+
+import com.example.books.Book; // 导入书籍类
+import java.util.ArrayList; // 导入 ArrayList 类
+import java.util.List; // 导入 List 接口
+
+/**
+ * 购物车单例类，用于管理用户购物车中的书籍列表。
+ */
+public class ShoppingCartSingleton {
+    private static ShoppingCartSingleton instance; // 单例实例变量
+    private List<Book> books; // 书籍列表
+
+    /**
+     * 私有构造函数，初始化书籍列表。
+     */
+    private ShoppingCartSingleton() {
+        books = new ArrayList<>(); // 使用 ArrayList 初始化书籍列表
+    }
+
+    /**
+     * 获取购物车单例实例的静态方法。
+     * @return ShoppingCartSingleton 单例实例
+     */
+    public static ShoppingCartSingleton getInstance() {
+        if (instance == null) {
+            instance = new ShoppingCartSingleton(); // 如果实例为空，则创建新实例
+        }
+        return instance; // 返回单例实例
+    }
+
+    /**
+     * 向购物车中添加书籍。
+     * @param book 要添加的书籍对象
+     */
+    public void addBook(Book book) {
+        books.add(book); // 将书籍对象添加到列表中
+    }
+
+    /**
+     * 获取购物车中所有的书籍列表。
+     * @return List<Book> 购物车中的书籍列表
+     */
+    public List<Book> getBooks() {
+        return books; // 返回书籍列表
+    }
+
+    /**
+     * 获取购物车中最后一本书籍。
+     * @return Book 最后一本书籍对象，如果购物车为空则返回 null
+     */
+    public Book getLastBook() {
+        if (books.isEmpty()) {
+            return null; // 如果购物车为空，返回 null
+        }
+        return books.get(books.size() - 1); // 返回最后一本书籍对象
+    }
+
+    /**
+     * 更新购物车中最后一本书籍。
+     * @param book 要更新的书籍对象
+     */
+    public void updateLastBook(Book book) {
+        if (!books.isEmpty()) {
+            books.set(books.size() - 1, book); // 更新最后一本书籍对象
+        }
+    }
+
+    /**
+     * 打印输出购物车中所有书籍的描述信息。
+     */
+    public void showCart() {
+        for (Book book : books) {
+            System.out.println(book.getDescription()); // 输出书籍描述信息
+        }
+    }
+}
+
+3.1模式名字：装饰模式
+3.2类图：
+
+3.3分析解释(代码执行过程)：
+在mian.java中，如果用户选择对书本进行装饰（包装/装订）
+先获取最后一本书：调用 cart.getLastBook() 获取购物车中最后一本书，返回一个 Book 对象，赋值给 lastBook 变量。
+Book lastBook = cart.getLastBook();
+然后根据用户的选择进行装饰（以选择“wrap”为例）：创建一个 PackagingDecorator 对象，传入 lastBook 作为参数。PackagingDecorator 是一个具体装饰器，为书籍添加包装功能，调用 cart.updateLastBook，用装饰后的 Book 对象为购物车中的最后一本书。
+cart.updateLastBook(new PackagingDecorator(lastBook));
+3.4角色及其代码：抽象构件类、具体构建类、抽象装饰类、具体装饰类
+抽象构件类:（Book.java）
+package com.example.books;
+
+public interface Book {
+    String getTitle();
+    String getAuthor();
+    double getPrice();
+    String getDescription();
+}
+
+具体构件类:（Novel.java和TextBook.java）
+package com.example.books;
+
+public class Novel implements Book {
+    private String title;
+    private String author;
+    private double price;
+    private String genre;
+
+    public Novel(String title, String author, double price, String genre) {
+        this.title = title;
+        this.author = author;
+        this.price = price;
+        this.genre = genre;
+    }
+
+    @Override
+    public String getTitle() {
+        return title;
+    }
+
+    @Override
+    public String getAuthor() {
+        return author;
+    }
+
+    @Override
+    public double getPrice() {
+        return price;
+    }
+
+    @Override
+    public String getDescription() {
+        return title + " by " + author + ", Genre: " + genre;
+    }
+}
+package com.example.books;
+
+public class Textbook implements Book {
+    private String title;
+    private String author;
+    private double price;
+    private String subject;
+
+    public Textbook(String title, String author, double price, String subject) {
+        this.title = title;
+        this.author = author;
+        this.price = price;
+        this.subject = subject;
+    }
+
+    @Override
+    public String getTitle() {
+        return title;
+    }
+
+    @Override
+    public String getAuthor() {
+        return author;
+    }
+
+    @Override
+    public double getPrice() {
+        return price;
+    }
+    @Override
+    public String getDescription() {
+        return title + " by " + author + ", Subject: " + subject;
+    }
+}
+
+抽象装饰类:（BookDecorator）
+package com.example.process;
+
+import com.example.books.Book;
+
+public abstract class BookDecorator implements Book {
+    protected Book decoratedBook;
+
+    public BookDecorator(Book decoratedBook) {
+        this.decoratedBook = decoratedBook;
+    }
+
+    @Override
+    public String getTitle() {
+        return decoratedBook.getTitle();
+    }
+
+    @Override
+    public String getAuthor() {
+        return decoratedBook.getAuthor();
+    }
+
+    @Override
+    public double getPrice() {
+        return decoratedBook.getPrice();
+    }
+
+    @Override
+    public String getDescription() {
+        return decoratedBook.getDescription();
+    }
+}
+ 
+具体装饰类（BindingDecorator.java\PackagingDecorator.java）:
+package com.example.process;
+
+import com.example.books.Book;
+
+public class BindingDecorator extends BookDecorator {
+    public BindingDecorator(Book decoratedBook) {
+        super(decoratedBook);
+    }
+
+    @Override
+    public String getDescription() {
+        return decoratedBook.getDescription() + " (Bound)";
+    }
+}
+package com.example.process;
+
+import com.example.books.Book;
+
+public class PackagingDecorator extends BookDecorator {
+    public PackagingDecorator(Book decoratedBook) {
+        super(decoratedBook);
+    }
+
+    @Override
+    public String getDescription() {
+        return decoratedBook.getDescription() + " (Packaged)";
+    }
+}
+
+4.1模式名字：策略模式
+4.2类图：
+
+4.3分析解释(代码执行过程)：
+在mian.java中，当用户需要支付，先创建一个PaymentContext对象，即环境类实例，并通过构造函数将 WeChatPayStrategy 对象作为参数传递给它。这样，PaymentContext 对象就被初始化为使用微信支付的策略。
+PaymentContext paymentContext = new PaymentContext(new WeChatPayStrategy());
+然后接收用户输入的支付方式，如果支付方式是“alipay”，则调用以下语句来切换支付策略。这行代码调用了 PaymentContext 对象的 setPaymentStrategy 方法，并传入一个新的 AlipayStrategy 对象作为参数。setPaymentStrategy 方法会将 PaymentContext 对象当前持有的支付策略替换为新的 AlipayStrategy 对象。
+paymentContext.setPaymentStrategy(new AlipayStrategy());
+
+4.4角色及其代码：环境类、抽象策略类、具体策略类
+环境类：（PaymentContext.java）
+package com.example.payment;
+
+public class PaymentContext {
+    private PaymentStrategy strategy;
+
+    public PaymentContext(PaymentStrategy strategy) {
+        this.strategy = strategy;
+    }
+
+    public void setPaymentStrategy(PaymentStrategy strategy) {
+        this.strategy = strategy;
+    }
+
+    public void pay(double amount) {
+        strategy.pay(amount);
+    }
+}
+
+抽象策略类：（PaymentStrategy）
+package com.example.payment;
+
+public interface PaymentStrategy {
+    void pay(double amount);
+}
+
+具体策略类：（WeChatPayStrategy.java/AlipayStrategy.java）
+package com.example.payment;
+
+public class WeChatPayStrategy implements PaymentStrategy {
+    @Override
+    public void pay(double amount) {
+        System.out.println("Paid " + amount + " using WeChat Pay.");
+    }
+}
+package com.example.payment;
+
+public class AlipayStrategy implements PaymentStrategy {
+    @Override
+    public void pay(double amount) {
+        System.out.println("Paid " + amount + " using Alipay.");
+    }
+}
+
+5.1模式名字：状态模式
+5.2类图：
+
+5.3分析解释(代码执行过程)：
+在main.java中，首先创建了一个 ShoppingCartContext 对象，这个对象代表了购物车的状态管理器。
+ShoppingCartContext shoppingCartContext = new ShoppingCartContext();
+接下来调用ShoppingCartContext 中的 proceed 方法，在 ShoppingCartContext 中的 proceed 方法中，会委托当前状态对象来处理状态转移。由于当前状态是 ShoppingState，所以会执行 ShoppingState 中的 proceed 方法。这个方法会打印 "Shopping in progress..."，然后将状态转移为 CheckoutState。
+shoppingCartContext.proceed();
+
+5.4角色及其代码:环境类、抽象状态类、具体状态类
+环境类：（ShoppingCartContext.java）
+package com.example.state;
+
+public class ShoppingCartContext {
+    private ShoppingCartState state;
+
+    public ShoppingCartContext() {
+        state = new ShoppingState();
+    }
+
+    public void setState(ShoppingCartState state) {
+        this.state = state;
+    }
+
+    public void proceed() {
+        state.proceed(this);
+    }
+}
+
+抽象状态类：（ShoppingCartState.java）
+package com.example.state;
+
+public interface ShoppingCartState {
+    void proceed(ShoppingCartContext context);
+}
+
+具体状态类：（ShoppingState.java/CheckoutState.java）
+package com.example.state;
+
+public class ShoppingState implements ShoppingCartState {
+    @Override
+    public void proceed(ShoppingCartContext context) {
+        System.out.println("Shopping in progress...");
+        context.setState(new CheckoutState());
+    }
+}
+package com.example.state;
+
+public class CheckoutState implements ShoppingCartState {
+    @Override
+    public void proceed(ShoppingCartContext context) {
+        System.out.println("Checking out...");
+        context.setState(new ShoppingState());
+    }
+}

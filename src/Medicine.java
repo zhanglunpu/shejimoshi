@@ -25,12 +25,12 @@ public class Medicine implements MedicineComponent {
 
     @Override
     public String toString() {
-        return "药品名称：" + name + "，功效：" + effect;
+        return "中草药名称：" + name + "，功效：" + effect;
     }
 
     @Override
     public void display() {
-        System.out.println("药品名称：" + name);
+        System.out.println("中草药名称：" + name);
         System.out.println("功效：" + effect);
         System.out.println("------------------------");
     }
